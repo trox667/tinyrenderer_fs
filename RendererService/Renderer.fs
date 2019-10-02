@@ -57,17 +57,12 @@ let barycentric (p0 : Vec3) (p1 : Vec3) (p2 : Vec3) (P : Vec3) =
     let (p2x, p2y, _) = p2
     let (pX, pY, _) = P
 
-    let u =
-        cross3 (vector [ p2x - p0x
-                         p1x - p0x
-                         p0x - pX ]) (vector [ p2y - p0y
-                                               p1y - p0y
-                                               p0y - pY ])
-    if abs (u.[2]) < 1. then vector [ -1.; 1.; 1. ]
+    let u = cross3 (p2x - p0x, p1x - p0x, p0x - pX) (p2y - p0y, p1y - p0y, p0y - pY)
+    let (ux, uy, uz) = u;
+
+    if abs (uz) < 1. then (-1., 1., 1.)
     else
-        vector [ 1. - (u.[0] + u.[1]) / u.[2]
-                 u.[1] / u.[2]
-                 u.[0] / u.[2] ]
+        (1. - (ux + uy) / uz, uy / uz, ux / uz)
 
 let makeBBoxMin (startVal : Vec3) (pts : List<Vec3>) =
     List.fold (fun (acc : Vec3) (curr : Vec3) ->
@@ -84,9 +79,9 @@ let makeBBoxMax (startVal : Vec3) (clamp : Vec3) (pts : List<Vec3>) =
 
 let triangle (pts : List<Vec3>) (width : int) (height : int)
     (pixels : IPixelCollection) (color : MagickColor) =
-    let clamp = (double width - 1., double height - 1., -1.)
+    let clamp = (double width - 1., double height - 1., 1.)
     let bboxmin = makeBBoxMin (-1., -1., -1.) pts
-    let bboxmax = makeBBoxMax (0., 0., -1.) clamp pts
+    let bboxmax = makeBBoxMax (0., 0., 0.) clamp pts
     let (xMin, yMin, _) = bboxmin
     let (xMax, yMax, _) = bboxmax
     let xMin = xMin |> roundInt
@@ -95,9 +90,9 @@ let triangle (pts : List<Vec3>) (width : int) (height : int)
     let yMax = yMax |> roundInt
     for x = xMin to xMax do
         for y = yMin to yMax do
-            let bcScreen =
+            let (bcsx, bcsy, bcsz) =
                 barycentric pts.[0] pts.[1] pts.[2] (double x, double y, 0.)
-            if bcScreen.[0] < 0. || bcScreen.[1] < 0. || bcScreen.[2] < 0. then
+            if bcsx < 0. || bcsy < 0. || bcsz < 0. then
                 ()
             else pixels.GetPixel(x, y).Set([| color.R; color.G; color.B |])
     ()

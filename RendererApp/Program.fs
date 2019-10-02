@@ -57,7 +57,7 @@ let lessonTwo (model : Model) =
     let image = new MagickImage(black, width, height)
     let pixels = image.GetPixels()
 
-    let lightDir = vector [ 0.; 0.; -1. ]
+    let lightDir = ( 0., 0., -1.)
 
     let makeScreenCoords (vertices : List<Vector<double>>) (face : FaceIndex [])
         width height =
@@ -70,24 +70,28 @@ let lessonTwo (model : Model) =
         [ convertVertexToScreen v0 width height
           convertVertexToScreen v1 width height
           convertVertexToScreen v2 width height ]
+    
+    let makeWorldCoords (vertices: List<Vector<double>>) (face : FaceIndex[]) =
+        let v0 = vertices.[face.[0].iV]
+        let v1 = vertices.[face.[1].iV]
+        let v2 = vertices.[face.[2].iV]
+        [
+            (v0.[0], v0.[1], v0.[2]);
+            (v1.[0], v1.[1], v1.[2]);
+            (v2.[0], v2.[1], v2.[2])
+        ]
+
     model.faces
     |> List.iter (fun face ->
-           let mutable worldCoords =
-               [ (vector [ 0.; 0.; 0. ])
-                 (vector [ 0.; 0.; 0. ])
-                 (vector [ 0.; 0.; 0. ]) ]
 
            let screenCoords = makeScreenCoords model.vertices face width height 
-           for i in 0..2 do
-               let v = model.vertices.[face.[i].iV]
-               worldCoords.[i].SetValues [| v.[0]
-                                            v.[1]
-                                            v.[2] |]
+           let worldCoords = makeWorldCoords model.vertices face
+           
            let n =
-               cross3 (worldCoords.[2] - worldCoords.[0])
-                   (worldCoords.[1] - worldCoords.[0])
-           let n = n.Normalize 1.
-           let intensity = lightDir.DotProduct n
+               cross3 (sub3 worldCoords.[2] worldCoords.[0])
+                   (sub3 worldCoords.[1] worldCoords.[0])
+           let n = normalize3 n
+           let intensity = dot3 lightDir n
            let makeComponent r = r * 255. |> byte
            let c =
                MagickColor
