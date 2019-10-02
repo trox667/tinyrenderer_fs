@@ -4,7 +4,7 @@
 // https://devblogs.microsoft.com/dotnet/net-core-image-processing/
 // UdSSR - User-defined-Server-Side-Renderer
 
-module RendererService
+module RendererApp
 
 open ImageMagick
 open MathNet.Numerics.LinearAlgebra
@@ -102,7 +102,7 @@ let lessonTwo (model : Model) =
 
 [<EntryPoint>]
 let main argv =
-    let model = parseModel "./african_head.obj"
+    let model = parseModel "../african_head.obj"
     // let image = new MagickImage(MagickColor("#ff0000"), 300, 200)
     // let pixels = image.GetPixels()
     // let pixel = pixels.GetPixel(0,0)

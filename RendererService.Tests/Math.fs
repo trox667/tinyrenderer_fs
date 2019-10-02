@@ -1,15 +1,10 @@
-module Tests
+module MathTests
 
 open Math
 
 open MathNet.Numerics.LinearAlgebra
 open System
 open Xunit
-
-
-[<Fact>]
-let ``My test`` () =
-    Assert.True(true)
 
 [<Fact>]
 let crossProduct () =

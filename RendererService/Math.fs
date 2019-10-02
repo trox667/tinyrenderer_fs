@@ -2,8 +2,6 @@ module Math
 
 open MathNet.Numerics.LinearAlgebra
 
-// let cross2 (v1:Vector<double>) (v2:Vector<double>) =
-//   assert (v1.Count = v2.Count && v1.Count = 2)
 let multiplyVector (v1 : Vector<double>) (v2 : Vector<double>) =
     Vector.map2 (*) v1 v2
 let multiplyVectorLists (v1 : List<double>) (v2 : List<double>) =
