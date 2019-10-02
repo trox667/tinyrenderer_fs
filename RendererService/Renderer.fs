@@ -51,49 +51,52 @@ let line3 (x0 : int) (y0 : int) (x1 : int) (y1 : int)
         | _ -> pixels.GetPixel(x, y).Set([| color.R; color.G; color.B |])
     ()
 
-let barycentric (p0 : Vector<double>) (p1 : Vector<double>)
-    (p2 : Vector<double>) (P : Vector<double>) =
+let barycentric (p0 : Vec3) (p1 : Vec3) (p2 : Vec3) (P : Vec3) =
+    let (p0x, p0y, _) = p0
+    let (p1x, p1y, _) = p1
+    let (p2x, p2y, _) = p2
+    let (pX, pY, _) = P
+
     let u =
-        cross3 (vector [ p2.[0] - p0.[0]
-                         p1.[0] - p0.[0]
-                         p0.[0] - P.[0] ]) (vector [ p2.[1] - p0.[1]
-                                                     p1.[1] - p0.[1]
-                                                     p0.[1] - P.[1] ])
+        cross3 (vector [ p2x - p0x
+                         p1x - p0x
+                         p0x - pX ]) (vector [ p2y - p0y
+                                               p1y - p0y
+                                               p0y - pY ])
     if abs (u.[2]) < 1. then vector [ -1.; 1.; 1. ]
     else
         vector [ 1. - (u.[0] + u.[1]) / u.[2]
                  u.[1] / u.[2]
                  u.[0] / u.[2] ]
 
-let makeBBoxMin (startVal:Vector<double>) (pts : List<Vector<double>>) =
-    List.fold (fun (acc : Vector<double>) (curr : Vector<double>) ->
-        vector [ min acc.[0] curr.[0] |> max 0.
-                 min acc.[1] curr.[1] |> max 0. ]) startVal pts
+let makeBBoxMin (startVal : Vec3) (pts : List<Vec3>) =
+    List.fold (fun (acc : Vec3) (curr : Vec3) ->
+        let (ax, ay, _) = acc
+        let (cx, cy, _) = curr
+        (min ax cx |> max 0., min ay cy |> max 0., 0.)) startVal pts
 
-let makeBBoxMax (startVal:Vector<double>) (clamp: Vector<double>) (pts : List<Vector<double>>) =
-    List.fold (fun (acc : Vector<double>) (curr : Vector<double>) ->
-        vector [ max acc.[0] curr.[0] |> min clamp.[0]
-                 max acc.[1] curr.[1] |> min clamp.[0] ]) startVal pts
+let makeBBoxMax (startVal : Vec3) (clamp : Vec3) (pts : List<Vec3>) =
+    List.fold (fun (acc : Vec3) (curr : Vec3) ->
+        let (ax, ay, _) = acc
+        let (cx, cy, _) = curr
+        let (clx, cly, _) = clamp
+        (max ax cx |> min clx, max ay cy |> min cly, 0.)) startVal pts
 
-let triangle (pts : List<Vector<double>>) (width : int) (height : int)
+let triangle (pts : List<Vec3>) (width : int) (height : int)
     (pixels : IPixelCollection) (color : MagickColor) =
-    
-    let clamp =
-        vector [ double width - 1.
-                 double height - 1. ]
-    let bboxmin = makeBBoxMin (vector [-1.; -1.]) pts
-    let bboxmax = makeBBoxMax (vector [0.; 0.]) clamp pts
-    
-    let xMin = bboxmin.[0] |> roundInt
-    let xMax = bboxmax.[0] |> roundInt
-    let yMin = bboxmin.[1] |> roundInt
-    let yMax = bboxmax.[1] |> roundInt
+    let clamp = (double width - 1., double height - 1., -1.)
+    let bboxmin = makeBBoxMin (-1., -1., -1.) pts
+    let bboxmax = makeBBoxMax (0., 0., -1.) clamp pts
+    let (xMin, yMin, _) = bboxmin
+    let (xMax, yMax, _) = bboxmax
+    let xMin = xMin |> roundInt
+    let xMax = xMax |> roundInt
+    let yMin = yMin |> roundInt
+    let yMax = yMax |> roundInt
     for x = xMin to xMax do
         for y = yMin to yMax do
             let bcScreen =
-                barycentric pts.[0] pts.[1] pts.[2] (vector [ double x
-                                                              double y
-                                                              0. ])
+                barycentric pts.[0] pts.[1] pts.[2] (double x, double y, 0.)
             if bcScreen.[0] < 0. || bcScreen.[1] < 0. || bcScreen.[2] < 0. then
                 ()
             else pixels.GetPixel(x, y).Set([| color.R; color.G; color.B |])

@@ -3,7 +3,6 @@
 // https://numerics.mathdotnet.com/Matrix.html
 // https://devblogs.microsoft.com/dotnet/net-core-image-processing/
 // UdSSR - User-defined-Server-Side-Renderer
-
 module RendererApp
 
 open ImageMagick
@@ -57,30 +56,30 @@ let lessonTwo (model : Model) =
     let black = MagickColor(0uy, 0uy, 0uy, 255uy)
     let image = new MagickImage(black, width, height)
     let pixels = image.GetPixels()
-    let rand = System.Random()
+
     let lightDir = vector [ 0.; 0.; -1. ]
-    // triangle [ (vector [ 10.; 10.; 0. ])
-    //            (vector [ 100.; 30.; 0. ])
-    //            (vector [ 190.; 160.; 0. ]) ] width height (image.GetPixels()) red
+
+    let makeScreenCoords (vertices : List<Vector<double>>) (face : FaceIndex [])
+        width height =
+        let v0 = vertices.[face.[0].iV]
+        let v1 = vertices.[face.[1].iV]
+        let v2 = vertices.[face.[2].iV]
+        let convertVertexToScreen (v : Vector<double>) width height =
+            ((v.[0] + 1.) * (double width) / 2.,
+             (v.[1] + 1.) * (double height) / 2., 0.)
+        [ convertVertexToScreen v0 width height
+          convertVertexToScreen v1 width height
+          convertVertexToScreen v2 width height ]
     model.faces
     |> List.iter (fun face ->
-           let mutable screenCoords =
-               [ (vector [ 0.; 0.; 0. ])
-                 (vector [ 0.; 0.; 0. ])
-                 (vector [ 0.; 0.; 0. ]) ]
-
            let mutable worldCoords =
                [ (vector [ 0.; 0.; 0. ])
                  (vector [ 0.; 0.; 0. ])
                  (vector [ 0.; 0.; 0. ]) ]
 
+           let screenCoords = makeScreenCoords model.vertices face width height 
            for i in 0..2 do
                let v = model.vertices.[face.[i].iV]
-               screenCoords.[i].SetValues [| (v.[0] + 1.) * (double width)
-                                             / 2.
-                                             (v.[1] + 1.) * (double height)
-                                             / 2.
-                                             0. |]
                worldCoords.[i].SetValues [| v.[0]
                                             v.[1]
                                             v.[2] |]

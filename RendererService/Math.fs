@@ -2,6 +2,9 @@ module Math
 
 open MathNet.Numerics.LinearAlgebra
 
+type Vec2 = double * double
+type Vec3 = double * double * double
+
 let multiplyVector (v1 : Vector<double>) (v2 : Vector<double>) =
     Vector.map2 (*) v1 v2
 let multiplyVectorLists (v1 : List<double>) (v2 : List<double>) =

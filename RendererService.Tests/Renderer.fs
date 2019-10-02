@@ -7,29 +7,29 @@ open Xunit
 
 [<Fact>]
 let bboxMin () =
-  let startVal = vector [-1.; -1.]
+  let startVal = (-1., -1., -1.)
 
   let input = [
-    vector [0.; 0.]
-    vector [1.; 2.]
-    vector [2.; 1.]
+    (0., 0., 0.)
+    (1., 2., 0.)
+    (2., 1., 0.)
   ]
 
-  let expect =  vector [0.; 0.]
+  let expect =  (0., 0., 0.)
 
   let v = makeBBoxMin startVal input
   Assert.StrictEqual(v, expect)
 
 [<Fact>]
 let bboxMax () =
-  let startVal = vector [-1.; -1.]
-  let clamp = vector [2.; 2.]
+  let startVal = (-1., -1., -1.)
+  let clamp = (2., 2., -1.)
   let input = [
-    vector [0.; 0.]
-    vector [1.; 2.]
-    vector [2.; 1.]
+    (0., 0., 0.)
+    (1., 2., 0.)
+    (2., 1., 0.)
   ]
-  let expect =  vector [2.; 2.]
+  let expect =  (2., 2., 0.)
 
   let v = makeBBoxMax startVal clamp input
   Assert.StrictEqual(v, expect)
