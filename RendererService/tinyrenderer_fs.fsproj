@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Math.fs" />
+    <Compile Include="Buffer.fs" />
     <Compile Include="Renderer.fs" />
     <Compile Include="Model.fs" />
   </ItemGroup>

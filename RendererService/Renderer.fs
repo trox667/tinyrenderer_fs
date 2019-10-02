@@ -77,17 +77,27 @@ let makeBBoxMax (startVal : Vec3) (clamp : Vec3) (pts : List<Vec3>) =
         let (clx, cly, _) = clamp
         (max ax cx |> min clx, max ay cy |> min cly, 0.)) startVal pts
 
-let triangle (pts : List<Vec3>) (width : int) (height : int)
+let makeZ (pts : List<Vec3>) (bcScreen: Vec3) =
+    let (x, y, z) = bcScreen
+    let bcList = [x; y; z]
+    List.map2 (fun pt v -> 
+        ())
+    ()
+
+let triangle (pts : List<Vec3>) (width : int) (height : int) (zBuffer: double[])
     (pixels : IPixelCollection) (color : MagickColor) =
     let clamp = (double width - 1., double height - 1., 1.)
-    let bboxmin = makeBBoxMin (-1., -1., -1.) pts
-    let bboxmax = makeBBoxMax (0., 0., 0.) clamp pts
+    let bboxmin = makeBBoxMin (System.Double.MaxValue, System.Double.MaxValue, System.Double.MaxValue) pts
+    let bboxmax = makeBBoxMax (-System.Double.MaxValue, -System.Double.MaxValue, -System.Double.MaxValue) clamp pts
+
     let (xMin, yMin, _) = bboxmin
     let (xMax, yMax, _) = bboxmax
+
     let xMin = xMin |> roundInt
     let xMax = xMax |> roundInt
     let yMin = yMin |> roundInt
     let yMax = yMax |> roundInt
+
     for x = xMin to xMax do
         for y = yMin to yMax do
             let (bcsx, bcsy, bcsz) =
@@ -95,4 +105,5 @@ let triangle (pts : List<Vec3>) (width : int) (height : int)
             if bcsx < 0. || bcsy < 0. || bcsz < 0. then
                 ()
             else pixels.GetPixel(x, y).Set([| color.R; color.G; color.B |])
+                    
     ()
