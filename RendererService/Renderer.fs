@@ -4,6 +4,8 @@ open Math
 open ImageMagick
 open MathNet.Numerics.LinearAlgebra
 
+open Buffer
+
 let roundInt = floor >> int
 
 let line (x0 : float) (y0 : float) (x1 : float) (y1 : float)
@@ -80,9 +82,11 @@ let makeBBoxMax (startVal : Vec3) (clamp : Vec3) (pts : List<Vec3>) =
 let makeZ (pts : List<Vec3>) (bcScreen: Vec3) =
     let (x, y, z) = bcScreen
     let bcList = [x; y; z]
-    List.map2 (fun pt v -> 
-        ())
-    ()
+    List.fold2 (fun (acc:double) (pt:Vec3) (v:double) -> 
+        let (_,_,y) = pt
+        acc + y * v)
+         0. pts bcList
+    
 
 let triangle (pts : List<Vec3>) (width : int) (height : int) (zBuffer: double[])
     (pixels : IPixelCollection) (color : MagickColor) =
@@ -104,6 +108,10 @@ let triangle (pts : List<Vec3>) (width : int) (height : int) (zBuffer: double[])
                 barycentric pts.[0] pts.[1] pts.[2] (double x, double y, 0.)
             if bcsx < 0. || bcsy < 0. || bcsz < 0. then
                 ()
-            else pixels.GetPixel(x, y).Set([| color.R; color.G; color.B |])
+            else 
+                let z = makeZ pts (bcsx, bcsy, bcsz)
+                if getBufferValue zBuffer width x y < z then
+                    updateBuffer zBuffer width x y z
+                    pixels.GetPixel(x, y).Set([| color.R; color.G; color.B |])
                     
     ()

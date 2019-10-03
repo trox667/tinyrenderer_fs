@@ -10,6 +10,7 @@ open MathNet.Numerics.LinearAlgebra
 open Math
 open Renderer
 open Model
+open Buffer
 
 let lessonZero() =
     let red = MagickColor(255uy, 0uy, 0uy, 255uy)
@@ -50,14 +51,15 @@ let lessonOne (model : Model) =
     ()
 
 let lessonTwo (model : Model) =
-    let width = 200
-    let height = 200
+    let width = 500
+    let height = 500
     let red = MagickColor(255uy, 0uy, 0uy, 255uy)
     let black = MagickColor(0uy, 0uy, 0uy, 255uy)
     let image = new MagickImage(black, width, height)
     let pixels = image.GetPixels()
 
     let lightDir = ( 0., 0., -1.)
+    let zBuffer = createBuffer width height
 
     let makeScreenCoords (vertices : List<Vector<double>>) (face : FaceIndex [])
         width height =
@@ -97,7 +99,7 @@ let lessonTwo (model : Model) =
                MagickColor
                    ((intensity |> makeComponent), (intensity |> makeComponent),
                     (intensity |> makeComponent), 255uy)
-           if intensity > 0. then triangle screenCoords width height pixels c
+           if intensity > 0. then triangle screenCoords width height zBuffer pixels c
            else ())
     image.Flip()
     image.Write("output.png")
@@ -105,7 +107,7 @@ let lessonTwo (model : Model) =
 
 [<EntryPoint>]
 let main argv =
-    let model = parseModel "../african_head.obj"
+    let model = parseModel "african_head.obj"
     // let image = new MagickImage(MagickColor("#ff0000"), 300, 200)
     // let pixels = image.GetPixels()
     // let pixel = pixels.GetPixel(0,0)
